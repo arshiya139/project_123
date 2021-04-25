@@ -1,135 +1,112 @@
 <?php
 session_start();
-//error_reporting(0);
+error_reporting(0);
 include('includes/dbconnection.php');
 
-  ?>
-<!DOCTYPE html>
-<html lang="en">
-<head>
-  
-  <title>Curfew e-Pass Management System - Home</title>
-
-  <link rel="stylesheet" href="vendors/bootstrap/bootstrap.min.css">
-  <link rel="stylesheet" href="vendors/themify-icons/themify-icons.css">
-  <link rel="stylesheet" href="vendors/owl-carousel/owl.theme.default.min.css">
-  <link rel="stylesheet" href="vendors/owl-carousel/owl.carousel.min.css">
-
-  <link rel="stylesheet" href="css/style.css">
-</head>
-<body>
-
-  <!--================ Header Menu Area start =================-->
- <?php include_once('includes/header.php');?>
-  <!--================Header Menu Area =================-->
-
-
-  <!--================ Banner Section start =================-->
-  <section class="hero-banner text-center">
-    <div class="container">
-      <h1>Curfew e-Pass Management System</h1>
- 
-    </div>
-  </section>
-  <!--================ Banner Section end =================-->
-
-
-  <!--================ Domain Search section start =================-->
-  <section class="bg-gray domain-search">
-    <div class="container">
-      <div class="row no-gutters">
-        <div class="col-md-5 col-lg-2 text-center text-md-left mb-3 mb-md-0">
-          <h3>Search Your Pass!</h3>
-        </div>
-        <div class="col-md-7 col-lg-10 pl-2 pl-xl-5">
-          <form class="form-inline flex-nowrap form-domainSearch" method="post">
-            <div class="form-group">
-              <label for="staticDomainSearch" class="sr-only">Search</label>
-              <input id="searchdata" type="text" name="searchdata" required="true" class="form-control" placeholder="Enter Your Pass ID"> 
-            </div>
-            <button type="submit" class="button rounded-0" name="search" id="submit">Search</button>
-          </form>
-           <?php
-if(isset($_POST['search']))
-{ 
-$sdata=$_POST['searchdata'];
-  ?>
-  <h4 align="center">Result against "<?php echo $sdata;?>" keyword </h4>
-
-     <table class="table table-striped table-bordered table-hover" id="dataTables-example">
- <?php
-$sql="SELECT * from tblpass where PassNumber like '%$sdata%'";
-$query = $dbh -> prepare($sql);
-$query->execute();
-$results=$query->fetchAll(PDO::FETCH_OBJ);
-
-$cnt=1;
-if($query->rowCount() > 0)
+if(isset($_POST['login'])) 
+  {
+    $username=$_POST['username'];
+    $password=md5($_POST['password']);
+    $sql ="SELECT ID FROM tbladmin WHERE UserName=:username and Password=:password";
+    $query=$dbh->prepare($sql);
+    $query-> bindParam(':username', $username, PDO::PARAM_STR);
+$query-> bindParam(':password', $password, PDO::PARAM_STR);
+    $query-> execute();
+    $results=$query->fetchAll(PDO::FETCH_OBJ);
+    if($query->rowCount() > 0)
 {
-foreach($results as $row)
-{               ?>
-      <tr align="center">
-<td colspan="6" style="font-size:20px;color:blue">
- Pass ID: <?php  echo ($row->PassNumber);?></td></tr>
+foreach ($results as $result) {
+$_SESSION['cpmsaid']=$result->ID;
+}
 
-  <tr>
-    <th scope>Full Name</th>
-    <td><?php  echo ($row->FullName);?></td>
-    <th scope>Mobile Number</th>
-    <td><?php  echo ($row->ContactNumber);?></td>
-    <th scope>Email</th>
-    <td><?php  echo ($row->Email);?></td>
-  </tr>
-<tr>
-    <th scope>Identity Type</th>
-    <td><?php  echo ($row->IdentityType);?></td>
-    <th scope>Identity Card Number</th>
-    <td><?php  echo ($row->IdentityCardno);?></td>
-    <th scope>Category</th>
-    <td><?php  echo ($row->Category);?></td>
-  </tr>
-<tr>
-    <th scope>From Date</th>
-    <td><?php  echo ($row->FromDate);?></td>
-    <th scope>To Date</th>
-    <td><?php  echo ($row->ToDate);?></td>
-    <th scope>Pass Creation Date</th>
-    <td><?php  echo ($row->PasscreationDate);?></td>
-  </tr>
-                                    
-    <?php 
-$cnt=$cnt+1;
-} } else { ?>
-  <tr>
-    <td colspan="8"> No record found against this search</td>
+  if(!empty($_POST["remember"])) {
+//COOKIES for username
+setcookie ("user_login",$_POST["username"],time()+ (10 * 365 * 24 * 60 * 60));
+//COOKIES for password
+setcookie ("userpassword",$_POST["password"],time()+ (10 * 365 * 24 * 60 * 60));
+} else {
+if(isset($_COOKIE["user_login"])) {
+setcookie ("user_login","");
+if(isset($_COOKIE["userpassword"])) {
+setcookie ("userpassword","");
+        }
+      }
+}
+$_SESSION['login']=$_POST['username'];
+echo "<script type='text/javascript'> document.location ='dashboard.php'; </script>";
+} else{
+echo "<script>alert('Invalid Details');</script>";
+}
+}
 
-  </tr>
-   
-<?php } }?> 
-     </table>
+?>
+<!DOCTYPE html>
+<html>
 
+<head>
+ 
+    <title>Curfew Pass Management System | Login Page</title>
+    <!-- Core CSS - Include with every page -->
+    <link href="assets/plugins/bootstrap/bootstrap.css" rel="stylesheet" />
+    <link href="assets/font-awesome/css/font-awesome.css" rel="stylesheet" />
+    <link href="assets/plugins/pace/pace-theme-big-counter.css" rel="stylesheet" />
+   <link href="assets/css/style.css" rel="stylesheet" />
+      <link href="assets/css/main-style.css" rel="stylesheet" />
+
+</head>
+
+<body class="body-Login-back">
+
+    <div class="container">
+       
+        <div class="row">
+            <div class="col-md-4 col-md-offset-4 text-center logo-margin ">
+              <h3 style="color: white;">Curfew e-Pass Management System</h3>
+                </div>
+            <div class="col-md-4 col-md-offset-4">
+                <div class="login-panel panel panel-default">                  
+                    <div class="panel-heading">
+                        <h3 class="panel-title">Please Sign In</h3>
+                    </div>
+                    <div class="panel-body">
+                        <form role="form" method="post" name="login">
+                            <fieldset>
+                                <div class="form-group">
+                                    <label for="login-username">Username</label>
+                                     <input type="text" class="form-control"  required="true" name="username" value="<?php if(isset($_COOKIE["user_login"])) { echo $_COOKIE["user_login"]; } ?>">
+                                                
+                                </div>
+                                <div class="form-group">
+                                    <label for="login-password">Password</label>
+                                    <input type="password" class="form-control" name="password" required="true" value="<?php if(isset($_COOKIE["userpassword"])) { echo $_COOKIE["userpassword"]; } ?>">
+                                                
+                                </div>
+                                <div class="checkbox">
+                                  
+                                        <input type="checkbox" id="remember" name="remember" <?php if(isset($_COOKIE["user_login"])) { ?> checked <?php } ?> />
+                <label for="keep_me_logged_in">Keep me signed in</label>
+                                   
+
+<label style="padding-left: 40px">
+    <a href="forgot-password.php">Lost Password?</a></label>
+                                </div>
+
+                                <!-- Change this to a button or input when using this as a form -->
+                               
+                                <input type="submit" value="Login" class="btn btn-lg btn-success btn-block" name="login" >
+                            </fieldset>
+                        </form>
+                    </div>
+                </div>
+            </div>
         </div>
-      </div>
     </div>
-  </section>
-  <!--================ Domain Search section end =================-->
 
+     <!-- Core Scripts - Include with every page -->
+    <script src="assets/plugins/jquery-1.10.2.js"></script>
+    <script src="assets/plugins/bootstrap/bootstrap.min.js"></script>
+    <script src="assets/plugins/metisMenu/jquery.metisMenu.js"></script>
 
-
-
-
-  <!-- ================ start footer Area ================= -->
-   <?php include_once('includes/footer.php');?>
-  <!-- ================ End footer Area ================= -->
-
-
-
-
-  <script src="vendors/jquery/jquery-3.2.1.min.js"></script>
-  <script src="vendors/bootstrap/bootstrap.bundle.min.js"></script>
-  <script src="vendors/owl-carousel/owl.carousel.min.js"></script>
-  <script src="js/jquery.ajaxchimp.min.js"></script>
-  <script src="js/mail-script.js"></script>
-  <script src="js/main.js"></script>
 </body>
+
 </html>
